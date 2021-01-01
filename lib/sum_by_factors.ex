@@ -26,15 +26,22 @@ defmodule SumByFactors do
       else: [{prime, Enum.sum(filtered)} | acc]
   end
 
-  def prime_factors(n) do
-    n = abs(n)
-    first_divisor =
-      div(n, 2)..1
-      |> Enum.find(&(rem(n, &1) == 0))
+  def prime_factors(num, next \\ 2)
 
-    case first_divisor do
-      1 -> [n]
-      _ -> prime_factors(div(n, first_divisor)) ++ prime_factors(first_divisor)
+  def prime_factors(num, 2) do
+    num = abs(num)
+    cond do
+      rem(num, 2) == 0 -> [2 | prime_factors(div(num, 2))]
+      4 > num -> [num]
+      true -> prime_factors(num, 3)
+    end
+  end
+
+  def prime_factors(num, next) do
+    cond do
+      rem(num, next) == 0 -> [next | prime_factors(div(num, next))]
+      next + next > num -> [num]
+      true -> prime_factors(num, next + 2)
     end
   end
 
