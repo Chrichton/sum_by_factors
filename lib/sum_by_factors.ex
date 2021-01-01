@@ -5,8 +5,9 @@ defmodule SumByFactors do
 
   def sum_of_divided(lst) do
     lst
-    |> Enum.flat_map(&primes/1)
+    |> Enum.flat_map(&prime_factors/1)
     |> Enum.uniq()
+    |> Enum.sort()
     |> produce_array(lst)
   end
 
@@ -23,6 +24,18 @@ defmodule SumByFactors do
     if filtered == [],
       do: acc,
       else: [{prime, Enum.sum(filtered)} | acc]
+  end
+
+  def prime_factors(n) do
+    n = abs(n)
+    first_divisor =
+      div(n, 2)..1
+      |> Enum.find(&(rem(n, &1) == 0))
+
+    case first_divisor do
+      1 -> [n]
+      _ -> prime_factors(div(n, first_divisor)) ++ prime_factors(first_divisor)
+    end
   end
 
   def primes(upto) do
