@@ -3,11 +3,13 @@ defmodule SumByFactors do
   Documentation for `SumByFactors`.
   """
 
+  def sum_of_divided(lst) when length(lst) == 0, do: []
+
   def sum_of_divided(lst) do
     lst
-    |> Enum.flat_map(&prime_factors/1)
-    |> Enum.uniq()
-    |> Enum.sort()
+    |> Enum.map(&abs(&1))
+    |> Enum.max()
+    |> primes()
     |> produce_array(lst)
   end
 
@@ -30,6 +32,7 @@ defmodule SumByFactors do
 
   def prime_factors(num, 2) do
     num = abs(num)
+
     cond do
       rem(num, 2) == 0 -> [2 | prime_factors(div(num, 2))]
       4 > num -> [num]
@@ -46,10 +49,10 @@ defmodule SumByFactors do
   end
 
   def primes(upto) do
-    for i <- 2..abs(upto), prime?(i), do: i
+    for i <- 2..upto, prime?(i), do: i
   end
 
-  def prime?(2), do: 2
+  def prime?(2), do: true
 
   def prime?(n) do
     Enum.all?(2..(trunc(:math.sqrt(n)) + 1), &(rem(n, &1) != 0))

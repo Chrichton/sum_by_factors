@@ -18,4 +18,8 @@ defmodule SumByFactorsTest do
   test "case3" do
     assert SumByFactors.sum_of_divided([15, 30, -45]) == [{2, 30}, {3, 0}, {5, 0}]
   end
+
+  test "empty" do
+    assert SumByFactors.sum_of_divided([]) == []
+  end
 end
