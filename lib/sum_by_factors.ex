@@ -6,11 +6,13 @@ defmodule SumByFactors do
   def sum_of_divided([]), do: []
 
   def sum_of_divided(lst) do
-    lst
+    abs_lst = Enum.map(lst, &abs(&1))
+
+    abs_lst
     |> Enum.map(&abs(&1))
     |> Enum.max()
     |> primes_upto_sqrt()
-    |> add_complement_primes(lst)
+    |> add_complement_primes(abs_lst)
     |> produce_array(lst)
   end
 
@@ -35,9 +37,10 @@ defmodule SumByFactors do
 
       if complement_prime == nil,
         do: acc,
-        else: acc ++ [complement_prime]
+        else: [complement_prime | acc]
     end)
     |> Enum.uniq()
+    |> Enum.sort()
   end
 
   def primes_upto_sqrt(upto) do
@@ -52,6 +55,7 @@ defmodule SumByFactors do
 
   def complement_prime(n, [prime | primes]) do
     rest = complement_prime(n, prime)
+
     complement_prime(rest, primes)
   end
 
