@@ -3,13 +3,14 @@ defmodule SumByFactors do
   Documentation for `SumByFactors`.
   """
 
-  def sum_of_divided(lst) when length(lst) == 0, do: []
+  def sum_of_divided([]), do: []
 
   def sum_of_divided(lst) do
     lst
     |> Enum.map(&abs(&1))
     |> Enum.max()
-    |> primes()
+    |> primes_upto_sqrt()
+    |> add_complement_primes(lst)
     |> produce_array(lst)
   end
 
@@ -28,33 +29,41 @@ defmodule SumByFactors do
       else: [{prime, Enum.sum(filtered)} | acc]
   end
 
-  def prime_factors(num, next \\ 2)
+  def add_complement_primes(primes, lst) do
+    Enum.reduce(lst, primes, fn number, acc ->
+      complement_prime = complement_prime(number, primes)
 
-  def prime_factors(num, 2) do
-    num = abs(num)
-
-    cond do
-      rem(num, 2) == 0 -> [2 | prime_factors(div(num, 2))]
-      4 > num -> [num]
-      true -> prime_factors(num, 3)
-    end
+      if complement_prime == nil,
+        do: acc,
+        else: acc ++ [complement_prime]
+    end)
+    |> Enum.uniq()
   end
 
-  def prime_factors(num, next) do
-    cond do
-      rem(num, next) == 0 -> [next | prime_factors(div(num, next))]
-      next + next > num -> [num]
-      true -> prime_factors(num, next + 2)
-    end
+  def primes_upto_sqrt(upto) do
+    for i <- 2..trunc(:math.sqrt(upto + 1)), prime?(i), do: i
   end
 
-  def primes(upto) do
-    for i <- 2..upto, prime?(i), do: i
+  def complement_prime(n, []) do
+    if n > 1,
+      do: n,
+      else: nil
+  end
+
+  def complement_prime(n, [prime | primes]) do
+    rest = complement_prime(n, prime)
+    complement_prime(rest, primes)
+  end
+
+  def complement_prime(n, prime) do
+    if rem(n, prime) == 0,
+      do: complement_prime(div(n, prime), prime),
+      else: n
   end
 
   def prime?(2), do: true
 
   def prime?(n) do
-    Enum.all?(2..(trunc(:math.sqrt(n)) + 1), &(rem(n, &1) != 0))
+    Enum.all?(2..trunc(:math.sqrt(n + 1)), &(rem(n, &1) != 0))
   end
 end
