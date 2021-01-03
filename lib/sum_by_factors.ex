@@ -6,90 +6,68 @@ defmodule SumByFactors do
   def sum_of_divided([]), do: []
 
   def sum_of_divided(lst) do
-    lst
+    abs_lst = Enum.map(lst, &abs(&1))
+
+    abs_lst
     |> Enum.map(&abs(&1))
     |> Enum.max()
-    |> primes()
+    |> primes_upto_sqrt()
+    |> add_complement_primes(abs_lst)
     |> produce_array(lst)
   end
 
   def produce_array(primes, lst) do
-    Enum.reduce(lst, %{}, fn n, acc ->
-      Map.put(acc, n, prime_factors(n, primes))
+    Enum.reduce(primes, [], fn prime, acc ->
+      produce_tuple(prime, lst, acc)
     end)
-    |> produce_tuples()
+    |> Enum.reverse()
   end
 
-  def produce_tuples(%{} = map) do
-    prime_factors =
-      map
-      |> Map.values()
-      |> Enum.flat_map(& &1)
-      |> Enum.uniq()
-      |> Enum.sort()
+  def produce_tuple(prime, lst, acc) do
+    filtered = Enum.filter(lst, &(rem(&1, prime) == 0))
 
-    Enum.map(prime_factors, fn prime -> {prime, sum_of_numbers(map, prime)} end)
+    if filtered == [],
+      do: acc,
+      else: [{prime, Enum.sum(filtered)} | acc]
   end
 
-  def sum_of_numbers(%{} = map, prime) do
-    :maps.filter(fn _n, primes -> Enum.member?(primes, prime) end, map)
-    |> Map.keys()
-    |> Enum.sum()
+  def add_complement_primes(primes, lst) do
+    Enum.reduce(lst, primes, fn number, acc ->
+      complement_prime = complement_prime(number, primes)
+
+      if complement_prime == nil,
+        do: acc,
+        else: [complement_prime | acc]
+    end)
+    |> Enum.uniq()
+    |> Enum.sort()
   end
 
-  def prime_factors(n, primes) do
-    factors =
-      primes
-      |> Enum.filter(fn prime -> rem(n, prime) == 0 end)
-      |> Enum.uniq()
-
-    inverse_prime_factor = inverse_prime_factor(n, primes)
-
-    if inverse_prime_factor == nil,
-      do: factors,
-      else: [inverse_prime_factor | factors]
+  def primes_upto_sqrt(upto) do
+    for i <- 2..trunc(:math.sqrt(upto + 1)), prime?(i), do: i
   end
 
-  def inverse_prime_factor(n, []) do
+  def complement_prime(n, []) do
     if n > 1,
       do: n,
       else: nil
   end
 
-  def inverse_prime_factor(n, [prime | primes]) do
-    rest = inverse_prime_factor(n, prime)
-    inverse_prime_factor(rest, primes)
+  def complement_prime(n, [prime | primes]) do
+    rest = complement_prime(n, prime)
+
+    complement_prime(rest, primes)
   end
 
-  def inverse_prime_factor(n, prime) do
+  def complement_prime(n, prime) do
     if rem(n, prime) == 0,
-      do: inverse_prime_factor(div(n, prime), prime),
+      do: complement_prime(div(n, prime), prime),
       else: n
   end
 
-  # def produce_array(primes, lst) do
-  #   Enum.reduce(primes, [], fn prime, acc ->
-  #     produce_tuple(prime, lst, acc)
-  #   end)
-  #   |> Enum.reverse()
-  # end
+  def prime?(2), do: true
 
-  # def produce_tuple(prime, lst, acc) do
-  #   filtered = Enum.filter(lst, &(rem(&1, prime) == 0))
-
-  #   if filtered == [],
-  #     do: acc,
-  #     else: [{prime, Enum.sum(filtered)} | acc]
-  # end
-
-  def primes(upto) do
-    Enum.reduce(2..trunc(:math.sqrt(upto + 1)), [], fn n, acc ->
-      if prime?(n, acc),
-        do: [n | acc],
-        else: acc
-    end)
-    |> Enum.reverse()
+  def prime?(n) do
+    Enum.all?(2..trunc(:math.sqrt(n + 1)), &(rem(n, &1) != 0))
   end
-
-  def prime?(n, primes), do: Enum.all?(primes, fn prime -> rem(n, prime) != 0 end)
 end
