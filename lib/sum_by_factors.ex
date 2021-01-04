@@ -35,9 +35,9 @@ defmodule SumByFactors do
     Enum.reduce(lst, primes, fn number, acc ->
       complement_prime = complement_prime(number, primes)
 
-      if complement_prime == nil,
-        do: acc,
-        else: [complement_prime | acc]
+      if complement_prime,
+        do: [complement_prime | acc],
+        else: acc
     end)
     |> Enum.uniq()
     |> Enum.sort()
